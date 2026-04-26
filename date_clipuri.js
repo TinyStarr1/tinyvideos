@@ -52,7 +52,7 @@ const videosData = [
     },
     {
         // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
-        link: "https://ws-cdn-video.rule34.xxx//images/4453/8d6e8f44335819de9f60e09ddd3d7d49.mp4?5069031",
+        link: "https://aws-mp4.rule34.xxx//images/4453/8d6e8f44335819de9f60e09ddd3d7d49.mp4?5069031",
         titlu: "Usada Hikaru Blowjob",
         data: "2026-04-26",
         taguri: ["blowjob", "cum", "2d"],
