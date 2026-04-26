@@ -4,7 +4,7 @@
 const videosData = [
     {
         // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
-        link: "https://rule34video.com/get_file/51/2853df891c0d26ac77494226fedac42d/4333000/4333514/4333514_720p.mp4/?v-acctoken=MjI3MnwzMTE4MTB8MHwyNWNlOWZmY2M0OGZkNmY0MmE0NWY4M2I3MWRlNTI2MAb0ecb72cb228b24a&rnd=1777225918928",
+        link: "https://eu-cdn09-prem.boomio-cdn.com/remote_control.php?file=E9s0fjpXO3JcW67T7gqFgtQRKFGOu3uVmQEwrfYE061eG71e3yXFJLouGqhWDQv5zho5oNSQAVtMMzq8gXh5vRxzYxVCSr1xPUhBtMtdDpyUryIla_Toa_vFxFqPw37VX2hVCfRgf8ntrT5q1-olvSfngEouWG0C2dcWOAQn3FKaeKM90zfCkFSwfMagI58LDwYavmFtapZesZoAJF02-m4o9y26EO8.mp4&acctoken=N2QxZTgwZDQwNTZkYmNiYmNkN2JjYjI2Y2EyYTg3YjM1ZWFiMTM5N2UyN2YxNTk1ODBiMTM1MmQ2MTRjMDQ4NXwxNzc3MjM0MDA3fDg1MjAwMHxydWxlMzR2aWRlby5jb218MHx8Y2UwN2Y3MDM3MzM1ZDRhYzYzNzZmNjdjYjZkY2U2ZTk",
         titlu: "Melfi Paizuri [Neoreptil]",
         data: "2026-04-26",
         taguri: ["paizuri", "cum", "2d"],
