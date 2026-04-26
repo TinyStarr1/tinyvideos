@@ -143,34 +143,24 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LÓGICA -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // ==========================================
-        // 1. CONFIGURARE BAZĂ DE DATE
-        // ==========================================
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'video-platform-app';
-
-        let currentUser = null;
-        let videosData = [];
-
-        // Expunem funcțiile pentru butoanele HTML
+    <!-- JAVASCRIPT LÓGICA - Partea 1: Interfața (Funcționează local garantat) -->
+    <script>
+        // 1. FUNCȚII PENTRU FERESTRE (MODALE)
         window.openModal = (id) => {
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
+            const modal = document.getElementById(id);
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
         };
+
         window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-            
-            // Resetăm câmpurile
+            const modal = document.getElementById(id);
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            // Resetăm câmpurile de text când închidem
             if(id === 'uploadModal') {
                 document.getElementById('videoFileInput').value = '';
                 document.getElementById('videoTitleInput').value = '';
@@ -181,20 +171,30 @@
                 document.getElementById('logPass').value = '';
             }
         };
-        window.processUpload = processUpload;
 
-        // ==========================================
-        // SISTEM AUTENTIFICARE UI
-        // ==========================================
-        
-        // Returnează toate conturile (din fișierul JS manual + un cont implicit de Admin)
+        // 2. SISTEM DE NOTIFICĂRI
+        window.showNotification = (message, isError = false) => {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-enter p-4 border-l-4 shadow-lg flex items-center gap-3 ${isError ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-accent text-white'}`;
+            toast.innerHTML = `<div class="font-medium text-sm">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // 3. SISTEM AUTENTIFICARE LOCALĂ
         function getAllUsers() {
             const fileUsers = typeof window.usersData !== 'undefined' ? window.usersData : [];
-            // Am adăugat contul admin/admin pentru a fi sigur că merge oriunde!
+            // Contul "admin" este salvat aici ca să meargă login-ul mereu!
             return [...fileUsers, { username: "admin", parola: "admin" }];
         }
 
-        function updateAuthUI() {
+        window.updateAuthUI = () => {
             const currentLocalUser = localStorage.getItem('currentUser');
             if (currentLocalUser) {
                 document.getElementById('authButtons').classList.add('hidden');
@@ -206,7 +206,7 @@
                 document.getElementById('userProfile').classList.add('hidden');
                 document.getElementById('userProfile').classList.remove('flex');
             }
-        }
+        };
 
         window.handleLogin = () => {
             const user = document.getElementById('logUser').value.trim();
@@ -217,43 +217,41 @@
             
             if(foundUser) {
                 localStorage.setItem('currentUser', foundUser.username);
-                updateAuthUI();
+                window.updateAuthUI();
                 window.closeModal('loginModal');
-                showNotification("Te-ai conectat cu succes ca " + foundUser.username + "!");
+                window.showNotification("Te-ai conectat cu succes ca " + foundUser.username + "!");
             } else {
-                showNotification("Nume sau parolă incorecte!", true);
+                window.showNotification("Nume sau parolă incorecte!", true);
             }
         };
 
         window.logout = () => {
             localStorage.removeItem('currentUser');
-            updateAuthUI();
-            showNotification("Te-ai deconectat.");
+            window.updateAuthUI();
+            window.showNotification("Te-ai deconectat.");
         };
 
-        // Inițializăm afișarea interfeței la încărcarea paginii
-        updateAuthUI();
+        // Inițializăm afișarea corectă a meniului la prima încărcare a paginii
+        window.addEventListener('DOMContentLoaded', () => {
+            window.updateAuthUI();
+        });
+    </script>
 
-        // Sistem de Notificări (fără alert)
-        function showNotification(message, isError = false) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast-enter p-4 border-l-4 shadow-lg flex items-center gap-3 ${isError ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-accent text-white'}`;
-            toast.innerHTML = `
-                <div class="font-medium text-sm">${message}</div>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
+    <!-- JAVASCRIPT LÓGICA - Partea 2: Baza de date Firebase (Necesită găzduire pt stocare reală) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        // 2. AUTENTIFICARE ȘI DESCĂRCARE DATE
-        // ==========================================
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'video-platform-app';
+
+        let currentUser = null;
+        let videosData = [];
+
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -262,23 +260,19 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                showNotification("Eroare la conectare la server.", true);
+                console.error("Eroare la conectare la server de date.", error);
             }
         };
 
-        // Ascultăm schimbările de la baza de date
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
                 const videosRef = collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_videos');
-                
                 onSnapshot(videosRef, (snapshot) => {
                     videosData = [];
                     snapshot.forEach(doc => {
                         videosData.push({ id: doc.id, ...doc.data() });
                     });
-                    
-                    // Sortăm: cele mai noi primele
                     videosData.sort((a, b) => b.createdAt - a.createdAt);
                     renderVideos();
                 }, (error) => {
@@ -289,21 +283,17 @@
 
         initAuth();
 
-        // ==========================================
-        // 3. LOGICA DE UPLOAD
-        // ==========================================
-        async function processUpload() {
-            // VERIFICARE: Este utilizatorul logat în cont?
+        window.processUpload = async () => {
             const currentLocalUser = localStorage.getItem('currentUser');
             if (!currentLocalUser) {
-                showNotification("Trebuie să te conectezi la cont pentru a publica un video!", true);
+                window.showNotification("Trebuie să te conectezi la cont pentru a publica un video!", true);
                 window.closeModal('uploadModal');
                 window.openModal('loginModal');
                 return;
             }
 
             if (!currentUser) {
-                showNotification("Așteaptă conectarea la baza de date...", true);
+                window.showNotification("Așteaptă conectarea la baza de date...", true);
                 return;
             }
 
@@ -311,26 +301,12 @@
             const titleInput = document.getElementById('videoTitleInput').value.trim();
             const tagsInput = document.getElementById('videoTagsInput').value.trim();
 
-            if (!fileInput.files || fileInput.files.length === 0) {
-                showNotification("Te rog selectează un fișier video!", true);
-                return;
-            }
-            if (!titleInput) {
-                showNotification("Te rog introdu un titlu!", true);
-                return;
-            }
+            if (!fileInput.files || fileInput.files.length === 0) return window.showNotification("Te rog selectează un fișier video!", true);
+            if (!titleInput) return window.showNotification("Te rog introdu un titlu!", true);
 
             const file = fileInput.files[0];
-            
-            // Generăm un URL local pentru a-l putea vizualiza instant, chiar dacă e foarte mare
-            // (Acesta rulează direct de pe PC-ul tău în browser)
             const localVideoUrl = URL.createObjectURL(file);
-
-            // Procesăm tagurile: le separăm prin virgulă, ștergem spațiile și golurile
-            let tagsArray = [];
-            if (tagsInput) {
-                tagsArray = tagsInput.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== '');
-            }
+            let tagsArray = tagsInput ? tagsInput.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== '') : [];
 
             const uploadBtn = document.getElementById('uploadBtn');
             uploadBtn.innerText = "Se salvează...";
@@ -338,32 +314,26 @@
 
             try {
                 const videosRef = collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_videos');
-                
-                // Salvăm DATELE în Firestore (Titlu, Data exactă, Taguri)
                 await addDoc(videosRef, {
                     title: titleInput,
                     fileName: file.name,
-                    videoUrl: localVideoUrl, // URL local pentru sesiune
+                    videoUrl: localVideoUrl,
                     tags: tagsArray,
-                    createdAt: Date.now(), // Salvează data curentă automat
+                    createdAt: Date.now(),
                     uploaderId: currentUser.uid,
-                    uploaderName: currentLocalUser // Adăugăm numele celui care a încărcat!
+                    uploaderName: currentLocalUser
                 });
-
-                showNotification("Videoclip publicat cu succes!");
+                window.showNotification("Videoclip publicat cu succes!");
                 window.closeModal('uploadModal');
             } catch (error) {
-                showNotification("Eroare la publicare.", true);
+                window.showNotification("Eroare la publicare. Asigură-te că folosești un server sau GitHub Pages.", true);
                 console.error(error);
             } finally {
                 uploadBtn.innerText = "Publică Video";
                 uploadBtn.disabled = false;
             }
-        }
+        };
 
-        // ==========================================
-        // 4. AFIȘAREA PE ECRAN
-        // ==========================================
         const videoGrid = document.getElementById('videoGrid');
         const latestVideosList = document.getElementById('latestVideosList');
 
@@ -377,21 +347,15 @@
                         <svg class="w-16 h-16 mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
                         <p class="text-lg">Nu există videoclipuri.</p>
                         <p class="text-sm mt-1">Fii primul care încarcă un clip!</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
 
-            // Generăm grila principală cu playere video
             videosData.forEach(video => {
                 const card = document.createElement('div');
                 card.className = "flex flex-col gap-2 bg-[#1a1a1a] p-2 border border-gray-800 hover:border-accent transition duration-300";
-                
-                // Formatăm data (zi/lună/an oră:minut)
                 const dateObj = new Date(video.createdAt);
                 const formattedDate = dateObj.toLocaleDateString('ro-RO') + ' ' + dateObj.toLocaleTimeString('ro-RO', {hour: '2-digit', minute:'2-digit'});
-                
-                // Generăm designul tagurilor HTML
                 const tagsHtml = video.tags && video.tags.length > 0 
                     ? video.tags.map(tag => `<span class="bg-gray-800 text-gray-300 text-[10px] px-2 py-0.5 border border-gray-600 uppercase tracking-wider">#${tag}</span>`).join('')
                     : `<span class="text-xs text-gray-600 italic">Fără taguri</span>`;
@@ -410,29 +374,18 @@
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                 ${formattedDate}
                             </span>
-                            <!-- Afișăm cine a încărcat videoclipul -->
                             <span class="text-[10px] text-gray-400 bg-gray-800 px-1 rounded border border-gray-600">@${video.uploaderName || 'anonim'}</span>
                         </div>
-                        <div class="flex flex-wrap gap-1 mt-3">
-                            ${tagsHtml}
-                        </div>
-                    </div>
-                `;
+                        <div class="flex flex-wrap gap-1 mt-3">${tagsHtml}</div>
+                    </div>`;
                 videoGrid.appendChild(card);
             });
 
-            // Actualizăm meniul lateral "Ultimele adăugate"
             videosData.slice(0, 8).forEach(video => {
                 const li = document.createElement('li');
                 li.className = "text-sm hover:text-accent cursor-pointer truncate flex flex-col border-b border-gray-800 pb-2";
-                
                 const dateObj = new Date(video.createdAt);
-                const shortDate = dateObj.toLocaleDateString('ro-RO');
-
-                li.innerHTML = `
-                    <span class="text-gray-300 font-semibold">${video.title}</span>
-                    <span class="text-[10px] text-gray-500">${shortDate} • ${video.tags ? video.tags.length : 0} taguri</span>
-                `;
+                li.innerHTML = `<span class="text-gray-300 font-semibold">${video.title}</span><span class="text-[10px] text-gray-500">${dateObj.toLocaleDateString('ro-RO')} • ${video.tags ? video.tags.length : 0} taguri</span>`;
                 latestVideosList.appendChild(li);
             });
         }
