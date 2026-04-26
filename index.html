@@ -10,50 +10,35 @@
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #e50914; }
-        
         body { background-color: #121212; color: #f3f4f6; }
         .bg-surface { background-color: #242424; }
         .border-accent { border-color: #e50914; }
         .text-accent { color: #e50914; }
         .bg-accent { background-color: #e50914; }
         .hover-bg-accent:hover { background-color: #b9090b; }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 
-    <!-- Conectăm baza de date a clipurilor! -->
-    <script>window.videosData = []; // Fallback in caz ca fisierul lipseste</script>
-    <script src="date_clipuri.js"></script>
-
-    <!-- Conectăm baza de date a conturilor (opțional) -->
-    <script>window.usersData = [];</script>
+    <!-- Citim datele din fișierele tale -->
     <script src="date_conturi.js" onerror="console.warn('date_conturi.js nu a fost găsit.')"></script>
+    <script src="date_clipuri.js" onerror="console.warn('date_clipuri.js nu a fost găsit.')"></script>
 </head>
-<body class="min-h-screen flex flex-col font-sans relative">
+<body class="min-h-screen flex flex-col font-sans">
 
-    <!-- ZONĂ NOTIFICĂRI -->
     <div id="toastContainer" class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- HEADER / BARA DE SUS -->
     <header class="bg-surface border-b-[3px] border-accent p-4 sticky top-0 z-40 shadow-lg">
         <div class="max-w-[1600px] mx-auto flex justify-between items-center flex-wrap gap-4">
-            <!-- Logo -->
-            <div class="border-2 border-white px-4 py-2 font-black tracking-wider text-xl cursor-pointer">
+            <div class="border-2 border-white px-4 py-2 font-black tracking-wider text-xl cursor-pointer" onclick="resetFilters()">
                 <span class="text-white">LO</span><span class="text-accent">GO</span>
             </div>
 
-            <!-- Meniul din dreapta -->
             <nav class="flex items-center gap-2 sm:gap-4 flex-wrap text-sm sm:text-base">
-                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Taguri</button>
+                <button id="btnTagsNav" onclick="toggleTagMenu()" class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Taguri</button>
                 
-                <!-- Buton Favorite (Ascuns default, vizibil doar la login) -->
                 <button id="btnFavoriteNav" onclick="toggleFavoritesView()" class="hidden border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Favorite</button>
 
-                <!-- Elemente Autentificare -->
                 <div id="authButtons" class="flex gap-2">
                     <button onclick="openModal('loginModal')" class="border-2 border-white px-4 py-1 text-white hover:border-accent hover:text-accent transition">Login</button>
                 </div>
@@ -66,253 +51,273 @@
         </div>
     </header>
 
-    <!-- CONȚINUT PRINCIPAL -->
+    <!-- Bara de Taguri Ascunsă (Apare când apeși pe Taguri) -->
+    <div id="tagMenu" class="hidden w-full bg-[#1a1a1a] border-b border-gray-800 p-4 shadow-inner">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap gap-2 items-center" id="tagsContainerUI">
+            <!-- Tagurile se vor genera aici -->
+        </div>
+    </div>
+
     <div class="flex flex-1 max-w-[1600px] mx-auto w-full">
-        <!-- SIDEBAR -->
         <aside class="w-full md:w-64 p-4 border-r-2 border-gray-800 flex-shrink-0 hidden md:flex flex-col gap-6">
             <div class="border-2 border-white p-1 flex">
-                <input type="text" placeholder="Caută videoclip..." class="bg-transparent w-full px-2 outline-none text-white placeholder-gray-500">
+                <!-- Am adăugat oninput pentru a căuta instantaneu -->
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Caută videoclip..." class="bg-transparent w-full px-2 outline-none text-white placeholder-gray-500">
             </div>
-
             <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
-                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Ultimele adăugate</h3>
+                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Rezultate Noi</h3>
                 <ul class="space-y-3" id="latestVideosList"></ul>
             </div>
-            
             <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
-                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Cele mai redate</h3>
+                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Top Vizionări</h3>
                 <ul class="space-y-3" id="mostPlayedList"></ul>
             </div>
         </aside>
 
-        <!-- GRILA DE VIDEOCLIPURI -->
         <main class="flex-1 p-4 md:p-8">
-            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Videoclipurile vor fi generate aici din date_clipuri.js -->
-            </div>
+            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         </main>
     </div>
 
     <!-- MODAL LOGIN -->
     <div id="loginModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4 shadow-[0_0_30px_rgba(229,9,20,0.2)]">
+        <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4">
             <h2 class="text-xl font-bold mb-4 text-white">Conectare</h2>
             <input type="text" id="logUser" placeholder="Nume utilizator" class="w-full mb-3 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
             <input type="password" id="logPass" placeholder="Parolă" class="w-full mb-4 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
             <div class="flex justify-end gap-2">
-                <button onclick="closeModal('loginModal')" class="px-4 py-2 text-sm border border-gray-500 hover:bg-gray-800 transition text-white">Anulează</button>
-                <button onclick="handleLogin()" class="px-4 py-2 text-sm bg-accent text-white hover-bg-accent transition">Intră</button>
+                <button onclick="closeModal('loginModal')" class="px-4 py-2 text-sm border border-gray-500 hover:bg-gray-800 text-white">Anulează</button>
+                <button onclick="handleLogin()" class="px-4 py-2 text-sm bg-accent text-white hover-bg-accent">Intră</button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LÓGICA -->
     <script>
-        // ==========================================
-        // 1. FUNCȚII PENTRU MODAL ȘI NOTIFICĂRI
-        // ==========================================
-        window.openModal = (id) => {
-            const modal = document.getElementById(id);
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
+        // Funcții Utilitare Modal
+        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); };
+        window.closeModal = (id) => { 
+            document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); 
+            if(id === 'loginModal') { document.getElementById('logUser').value = ''; document.getElementById('logPass').value = ''; }
         };
 
-        window.closeModal = (id) => {
-            const modal = document.getElementById(id);
-            if(modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-            if(id === 'loginModal') {
-                document.getElementById('logUser').value = '';
-                document.getElementById('logPass').value = '';
-            }
-        };
-
-        window.showNotification = (message, isError = false) => {
+        window.showNotification = (msg, err = false) => {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            toast.className = `toast-enter p-4 border-l-4 shadow-lg flex items-center gap-3 ${isError ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-accent text-white'}`;
-            toast.innerHTML = `<div class="font-medium text-sm">${message}</div>`;
+            toast.className = `toast-enter p-4 border-l-4 shadow-lg flex items-center gap-3 ${err ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-accent text-white'}`;
+            toast.innerHTML = `<div class="font-medium text-sm">${msg}</div>`;
             container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         };
 
-        // ==========================================
-        // 2. SISTEM AUTENTIFICARE
-        // ==========================================
-        function getAllUsers() {
-            const fileUsers = typeof window.usersData !== 'undefined' ? window.usersData : [];
-            // Contul de Admin cerut de tine
-            return [...fileUsers, { username: "TinyStarr1", parola: "01988910" }];
-        }
-
+        // Autentificare
         window.updateAuthUI = () => {
-            const currentLocalUser = localStorage.getItem('currentUser');
-            if (currentLocalUser) {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
                 document.getElementById('authButtons').classList.add('hidden');
                 document.getElementById('userProfile').classList.remove('hidden');
                 document.getElementById('userProfile').classList.add('flex');
-                document.getElementById('userNameDisplay').innerText = "@" + currentLocalUser;
-                // Arată butonul de Favorite când ești logat
+                document.getElementById('userNameDisplay').innerText = "@" + currentUser;
                 document.getElementById('btnFavoriteNav').classList.remove('hidden');
             } else {
                 document.getElementById('authButtons').classList.remove('hidden');
                 document.getElementById('userProfile').classList.add('hidden');
                 document.getElementById('userProfile').classList.remove('flex');
                 document.getElementById('btnFavoriteNav').classList.add('hidden');
-                
-                // Dacă se deconectează, ieșim din modul "Favorite" dacă eram în el
-                if(typeof showingFavorites !== 'undefined' && showingFavorites) {
-                    toggleFavoritesView();
-                }
+                if(showingFavorites) toggleFavoritesView();
             }
         };
 
         window.handleLogin = () => {
             const user = document.getElementById('logUser').value.trim();
             const pass = document.getElementById('logPass').value.trim();
-            
-            const allUsers = getAllUsers();
+            const allUsers = window.usersData || [];
             const foundUser = allUsers.find(u => u.username === user && u.parola === pass);
             
             if(foundUser) {
                 localStorage.setItem('currentUser', foundUser.username);
                 window.updateAuthUI();
                 window.closeModal('loginModal');
-                window.showNotification("Te-ai conectat cu succes!");
+                window.showNotification("Te-ai conectat ca " + foundUser.username);
             } else {
-                window.showNotification("Nume sau parolă incorecte!", true);
+                window.showNotification("Date incorecte!", true);
             }
         };
 
         window.logout = () => {
             localStorage.removeItem('currentUser');
             window.updateAuthUI();
-            window.showNotification("Te-ai deconectat.");
+            window.showNotification("Deconectat.");
         };
 
-        // ==========================================
-        // LOGICA DE FAVORITE (Pentru Pagina Principală)
-        // ==========================================
+        // Filtre Globale
         let showingFavorites = false;
+        let currentSearchText = "";
+        let currentSelectedTag = "";
+        let showingTagMenu = false;
+
+        // Resetare Filtre (Când dai click pe Logo)
+        window.resetFilters = () => {
+            document.getElementById('searchInput').value = '';
+            currentSearchText = "";
+            currentSelectedTag = "";
+            showingFavorites = false;
+            
+            document.getElementById('btnFavoriteNav').className = "border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition";
+            
+            renderTagsUI();
+            renderVideos();
+        };
+
         window.toggleFavoritesView = () => {
             showingFavorites = !showingFavorites;
             const btn = document.getElementById('btnFavoriteNav');
-            if(showingFavorites) {
-                btn.classList.add('bg-accent', 'text-white', 'border-accent');
-                btn.classList.remove('border-gray-500');
-            } else {
-                btn.classList.remove('bg-accent', 'text-white', 'border-accent');
-                btn.classList.add('border-gray-500');
-            }
-            renderVideos(); // Reîncărcăm grila filtrată
+            showingFavorites ? btn.className = "bg-accent text-white border-2 border-accent px-4 py-1" : btn.className = "border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition";
+            renderVideos();
         };
 
-        // ==========================================
-        // 3. AFIȘARE VIDEOCLIPURI (Din date_clipuri.js)
-        // ==========================================
-        const videoGrid = document.getElementById('videoGrid');
-        const latestVideosList = document.getElementById('latestVideosList');
-        const mostPlayedList = document.getElementById('mostPlayedList');
+        window.handleSearch = () => {
+            currentSearchText = document.getElementById('searchInput').value.toLowerCase();
+            renderVideos();
+        };
 
+        window.toggleTagMenu = () => {
+            showingTagMenu = !showingTagMenu;
+            const menu = document.getElementById('tagMenu');
+            const btn = document.getElementById('btnTagsNav');
+            
+            if(showingTagMenu) {
+                menu.classList.remove('hidden');
+                btn.classList.add('bg-gray-800', 'border-white', 'text-white');
+                renderTagsUI();
+            } else {
+                menu.classList.add('hidden');
+                btn.classList.remove('bg-gray-800', 'border-white', 'text-white');
+            }
+        };
+
+        window.selectTag = (tag) => {
+            if(currentSelectedTag === tag) {
+                currentSelectedTag = ""; // Dacă apeși pe tagul deja activ, se deselectează
+            } else {
+                currentSelectedTag = tag;
+                // Dacă meniul e ascuns și am apăsat de pe un videoclip, deschidem meniul
+                if(!showingTagMenu) toggleTagMenu(); 
+            }
+            renderTagsUI();
+            renderVideos();
+        };
+
+        // Funcție care desenează butoanele cu taguri sus
+        function renderTagsUI() {
+            const container = document.getElementById('tagsContainerUI');
+            if(!container) return;
+
+            // Extragem toate tagurile unice din clipuri
+            let data = window.videosData || [];
+            const allTags = new Set();
+            data.forEach(v => {
+                if(v.taguri) Object.values(v.taguri).forEach(t => allTags.add(t.toLowerCase().trim()));
+            });
+
+            // Butonul de Resetare
+            container.innerHTML = `<button onclick="selectTag('')" class="text-xs px-3 py-1 border transition ${currentSelectedTag === '' ? 'border-accent bg-accent text-white' : 'border-gray-600 text-gray-300 hover:border-white'}">TOATE</button>`;
+
+            // Randăm restul tagurilor
+            allTags.forEach(tag => {
+                const isActive = currentSelectedTag === tag;
+                container.innerHTML += `<button onclick="selectTag('${tag}')" class="text-xs px-3 py-1 border transition uppercase tracking-wider ${isActive ? 'border-accent bg-accent text-white font-bold' : 'border-gray-600 text-gray-300 hover:border-white'}">#${tag}</button>`;
+            });
+        }
+
+        // Randare Videoclipuri și Aplicare Filtre
         function renderVideos() {
-            videoGrid.innerHTML = '';
-            latestVideosList.innerHTML = '';
-            mostPlayedList.innerHTML = '';
+            const grid = document.getElementById('videoGrid');
+            const latList = document.getElementById('latestVideosList');
+            const mpList = document.getElementById('mostPlayedList');
+            grid.innerHTML = ''; latList.innerHTML = ''; mpList.innerHTML = '';
 
-            // Dacă variabila videosData este goală sau nu există
-            if (typeof videosData === 'undefined' || videosData.length === 0) {
-                videoGrid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 border-2 border-dashed border-gray-700">
-                        <svg class="w-16 h-16 mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
-                        <p class="text-lg">Nu există videoclipuri.</p>
-                        <p class="text-sm mt-1">Adaugă primul clip în fișierul date_clipuri.js!</p>
-                    </div>`;
+            let data = window.videosData || [];
+            if(data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500">Nu există clipuri momentan.</div>`;
                 return;
             }
 
-            // Mapăm pentru a păstra ID-ul (poziția din fișierul JS) pentru a-l trimite către clip.html
-            let videosWithId = videosData.map((video, index) => ({ ...video, originalId: index }));
+            // Pregătim datele adăugând ID-ul original
+            let filteredVideos = data.map((v, i) => ({ ...v, id: i }));
 
-            // Dacă butonul Favorite e apăsat, afișăm doar clipurile adăugate de utilizatorul curent
+            // 1. Filtru FAVORITE
             if (showingFavorites) {
                 const currentUser = localStorage.getItem('currentUser');
                 let allFavs = JSON.parse(localStorage.getItem('userFavorites')) || {};
                 let userFavs = allFavs[currentUser] || [];
-                videosWithId = videosWithId.filter(v => userFavs.includes(v.originalId));
-                
-                if(videosWithId.length === 0) {
-                    videoGrid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500 text-lg">Nu ai niciun videoclip salvat la favorite.</div>`;
-                }
+                filteredVideos = filteredVideos.filter(v => userFavs.includes(v.id));
             }
 
-            // Sortăm după dată, de la cel mai nou la cel mai vechi
-            const sortedVideos = [...videosWithId].sort((a, b) => new Date(b.data) - new Date(a.data));
+            // 2. Filtru SEARCH BARA
+            if (currentSearchText !== "") {
+                filteredVideos = filteredVideos.filter(v => 
+                    v.titlu.toLowerCase().includes(currentSearchText) || 
+                    (v.autor && v.autor.toLowerCase().includes(currentSearchText))
+                );
+            }
 
-            // Randăm Grila de Videoclipuri
+            // 3. Filtru TAG-URI
+            if (currentSelectedTag !== "") {
+                filteredVideos = filteredVideos.filter(v => 
+                    v.taguri && v.taguri.some(t => t.toLowerCase().trim() === currentSelectedTag)
+                );
+            }
+
+            // Verificăm dacă mai avem clipuri după filtrare
+            if(filteredVideos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500 text-lg">Nu am găsit niciun rezultat conform filtrelor tale.</div>`;
+                return;
+            }
+
+            // Sortăm rezultatele finale de la nou la vechi
+            const sortedVideos = [...filteredVideos].sort((a, b) => new Date(b.data) - new Date(a.data));
+
             sortedVideos.forEach(video => {
                 const card = document.createElement('div');
                 card.className = "flex flex-col gap-2 bg-[#1a1a1a] p-2 border border-gray-800 hover:border-accent transition duration-300";
                 
-                const tagsHtml = video.taguri && video.taguri.length > 0 
-                    ? video.taguri.map(tag => `<span class="bg-gray-800 text-gray-300 text-[10px] px-2 py-0.5 border border-gray-600 uppercase tracking-wider">#${tag}</span>`).join('')
-                    : `<span class="text-xs text-gray-600 italic">Fără taguri</span>`;
+                // Generăm tagurile ca fiind butoane clicabile direct de pe video!
+                const tagsHtml = video.taguri ? video.taguri.map(tag => 
+                    `<button onclick="selectTag('${tag.toLowerCase().trim()}')" class="bg-gray-800 text-gray-300 hover:bg-gray-600 hover:text-white transition text-[10px] px-2 py-0.5 border border-gray-600 uppercase">#${tag}</button>`
+                ).join('') : '';
 
                 card.innerHTML = `
-                    <a href="clip.html?id=${video.originalId}" class="w-full aspect-video bg-black flex items-center justify-center relative overflow-hidden group border-b border-gray-800">
-                        <!-- Auto Thumbnail generat din link-ul videoclipului (la secunda 1) -->
+                    <a href="clip.html?id=${video.id}" class="w-full aspect-video bg-black flex items-center justify-center relative overflow-hidden group border-b border-gray-800">
                         <video src="${video.link}#t=1" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 pointer-events-none" preload="metadata" muted playsinline></video>
-                        
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
                             <svg class="w-14 h-14 text-accent drop-shadow-[0_0_10px_rgba(229,9,20,0.8)]" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
                         </div>
                     </a>
                     <div class="flex flex-col pt-1">
-                        <h4 class="text-md font-bold text-white truncate" title="${video.titlu}">
-                            <a href="clip.html?id=${video.originalId}" class="hover:text-accent transition">${video.titlu}</a>
-                        </h4>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="text-xs text-gray-500 font-mono flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                ${video.data}
-                            </span>
-                            <span class="text-[10px] text-gray-400 bg-gray-800 px-1 rounded border border-gray-600">@${video.autor || 'anonim'}</span>
+                        <h4 class="text-md font-bold text-white truncate"><a href="clip.html?id=${video.id}" class="hover:text-accent">${video.titlu}</a></h4>
+                        <div class="flex justify-between items-center mt-1 text-xs text-gray-500">
+                            <span>${video.data}</span>
+                            <span class="text-[10px] text-gray-400 bg-gray-800 px-1 border border-gray-600">@${video.autor}</span>
                         </div>
                         <div class="flex flex-wrap gap-1 mt-3">${tagsHtml}</div>
                     </div>`;
-                videoGrid.appendChild(card);
+                grid.appendChild(card);
             });
 
-            // Randăm Meniul Lateral (Ultimele Adăugate) - link către clip.html
-            const allSorted = [...videosData].map((v, i) => ({...v, id: i})).sort((a, b) => new Date(b.data) - new Date(a.data));
-            allSorted.slice(0, 8).forEach(video => {
-                const li = document.createElement('li');
-                li.className = "text-sm hover:text-accent cursor-pointer truncate flex flex-col border-b border-gray-800 pb-2";
-                li.innerHTML = `<a href="clip.html?id=${video.id}"><span class="text-gray-300 font-semibold hover:text-accent transition">${video.titlu}</span><br><span class="text-[10px] text-gray-500">${video.data} • ${video.taguri ? video.taguri.length : 0} taguri</span></a>`;
-                latestVideosList.appendChild(li);
+            // Meniurile laterale (Folosesc și ele rezultatele filtrate acum!)
+            sortedVideos.slice(0, 8).forEach(v => {
+                latList.innerHTML += `<li class="text-sm border-b border-gray-800 pb-2"><a href="clip.html?id=${v.id}" class="text-gray-300 hover:text-accent">${v.titlu}</a><br><span class="text-[10px] text-gray-500">${v.data}</span></li>`;
             });
-            
-            // Randăm Meniul Lateral (Cele mai redate) - link către clip.html
-            allSorted.slice(0, 4).forEach((video, index) => {
-                const li = document.createElement('li');
-                li.className = "text-sm hover:text-accent cursor-pointer truncate flex flex-col";
-                li.innerHTML = `<a href="clip.html?id=${video.id}" class="text-gray-300 hover:text-accent transition">${index + 1}. ${video.titlu}</a>`;
-                mostPlayedList.appendChild(li);
+            sortedVideos.slice(0, 4).forEach((v, idx) => {
+                mpList.innerHTML += `<li class="text-sm"><a href="clip.html?id=${v.id}" class="text-gray-300 hover:text-accent">${idx+1}. ${v.titlu}</a></li>`;
             });
         }
 
-        // Inițializăm afișarea la prima deschidere
-        window.addEventListener('DOMContentLoaded', () => {
-            window.updateAuthUI();
-            renderVideos();
+        // Pornim aplicația și pregătim meniurile
+        window.addEventListener('DOMContentLoaded', () => { 
+            window.updateAuthUI(); 
+            renderTagsUI();
+            renderVideos(); 
         });
     </script>
 </body>
