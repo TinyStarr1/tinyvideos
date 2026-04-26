@@ -1,20 +1,23 @@
 // Aici vei adăuga manual videoclipurile.
-// Acum lista este goală, site-ul va afișa mesajul "Niciun videoclip".
+// La "link" trebuie să pui URL-ul direct către fișierul .mp4
 
 const videosData = [
-    // Exemplu de cum trebuie adăugat un clip (șterge barele // pentru a-l activa):
+    {
+        // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
+        link: "https://www.w3schools.com/html/mov_bbb.mp4",
+        titlu: "Video de Test - Natura",
+        data: "2026-04-26",
+        taguri: ["test", "natura", "demo"],
+        autor: "admin"
+    },
+    // Pentru a adăuga un clip nou, șterge barele (/* ... */) de mai jos și completează datele:
     /*
     {
-        fisier: "clipul_meu.mp4",
-        titlu: "Numele Clipului Meu",
-        data: "2024-11-01",
-        taguri: ["jocuri", "amuzant"]
-    },
-    {
-        fisier: "alt_clip.mov",
-        titlu: "Vlog la munte",
-        data: "2024-11-02",
-        taguri: ["vlog", "munte"]
+        link: "https://link-catre-noul-tau-video.com/clip.mp4",
+        titlu: "Titlul noului clip",
+        data: "2026-04-27",
+        taguri: ["gaming", "amuzant"],
+        autor: "NumeleTau"
     }
     */
 ];
