@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platformă Video</title>
-    <!-- Folosim Tailwind CSS pentru o stilizare rapidă și curată direct în HTML -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Personalizăm scrollbar-ul pentru a se potrivi cu tema */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #e50914; }
         
-        /* Tema de culori: Gri închis, Gri deschis, Roșu */
         body { background-color: #121212; color: #f3f4f6; }
         .bg-surface { background-color: #242424; }
         .border-accent { border-color: #e50914; }
@@ -21,6 +18,10 @@
         .bg-accent { background-color: #e50914; }
         .hover-bg-accent:hover { background-color: #b9090b; }
     </style>
+    
+    <!-- AICI ÎNCĂRCĂM DATELE DIN CELE 2 FIȘIERE JS -->
+    <script src="date_clipuri.js"></script>
+    <script src="date_conturi.js"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
@@ -36,181 +37,211 @@
             <nav class="flex items-center gap-2 sm:gap-4 flex-wrap text-sm sm:text-base">
                 <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Taguri</button>
                 
-                <!-- Butonul de Upload cerut -->
-                <button onclick="openUploadModal()" class="bg-accent text-white border-2 border-accent px-4 py-1 flex items-center gap-2 hover-bg-accent transition shadow-[0_0_10px_rgba(229,9,20,0.3)]">
+                <button onclick="alert('Pune fișierul video în folderul site-ului și adaugă-l în lista din codul date_clipuri.js!')" class="bg-accent text-white border-2 border-accent px-4 py-1 flex items-center gap-2 hover-bg-accent transition shadow-[0_0_10px_rgba(229,9,20,0.3)]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
                         <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
                     </svg>
-                    Încarcă
+                    Cum Încarc?
                 </button>
 
-                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Favorite</button>
-                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Înregistrare</button>
-                <button class="border-2 border-white px-4 py-1 text-white hover:border-accent hover:text-accent transition">Login</button>
+                <!-- Elemente Autentificare -->
+                <div id="authButtons" class="flex gap-2">
+                    <button onclick="openModal('registerModal')" class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Înregistrare</button>
+                    <button onclick="openModal('loginModal')" class="border-2 border-white px-4 py-1 text-white hover:border-accent hover:text-accent transition">Login</button>
+                </div>
+                
+                <div id="userProfile" class="hidden items-center gap-4">
+                    <span id="userNameDisplay" class="text-accent font-bold"></span>
+                    <button onclick="logout()" class="border border-gray-600 px-3 py-1 text-xs hover:border-white transition">Ieși</button>
+                </div>
             </nav>
         </div>
     </header>
 
     <!-- CONȚINUT PRINCIPAL -->
     <div class="flex flex-1 max-w-[1600px] mx-auto w-full">
-        
-        <!-- SIDEBAR (Bara din stânga) -->
         <aside class="w-full md:w-64 p-4 border-r-2 border-gray-800 flex-shrink-0 hidden md:flex flex-col gap-6">
-            <!-- Search -->
             <div class="border-2 border-white p-1 flex">
                 <input type="text" placeholder="Caută..." class="bg-transparent w-full px-2 outline-none text-white placeholder-gray-500">
             </div>
 
-            <!-- Ultimele videoclipuri -->
             <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
                 <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Ultimele adăugate</h3>
-                <ul class="space-y-3" id="latestVideosList">
-                    <!-- Generate din JS -->
-                </ul>
+                <ul class="space-y-3" id="latestVideosList"></ul>
             </div>
 
-            <!-- Cele mai redate -->
             <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
                 <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Cele mai redate</h3>
-                <ul class="space-y-3">
-                    <li class="text-sm hover:text-accent cursor-pointer truncate">1. Cum să programezi</li>
-                    <li class="text-sm hover:text-accent cursor-pointer truncate">2. Muzică relaxantă</li>
-                    <li class="text-sm hover:text-accent cursor-pointer truncate">3. Meci complet 2024</li>
-                    <li class="text-sm hover:text-accent cursor-pointer truncate">4. Tutorial HTML/CSS</li>
-                </ul>
+                <ul class="space-y-3" id="mostPlayedList"></ul>
             </div>
         </aside>
 
-        <!-- GRILA DE VIDEOCLIPURI (Partea dreaptă) -->
         <main class="flex-1 p-4 md:p-8">
             <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Videoclipurile vor fi generate aici de JavaScript -->
+                <!-- Generat din date_clipuri.js -->
             </div>
         </main>
-
     </div>
 
-    <!-- MODAL PENTRU UPLOAD (Ascuns by default) -->
-    <div id="uploadModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-surface border-2 border-accent p-6 w-full max-w-md mx-4 shadow-[0_0_30px_rgba(229,9,20,0.2)]">
-            <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Încarcă un videoclip nou</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Titlu Videoclip</label>
-                    <input type="text" id="newVideoTitle" class="w-full bg-[#121212] border border-gray-600 text-white p-2 outline-none focus:border-accent transition" placeholder="Ex: VLOG la munte...">
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Fișier Video (Atenție: Simulare)</label>
-                    <input type="file" accept="video/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-red-700 cursor-pointer">
-                </div>
-            </div>
-
-            <div class="mt-8 flex justify-end gap-3">
-                <button onclick="closeUploadModal()" class="px-4 py-2 border border-gray-500 hover:bg-gray-800 transition">Anulează</button>
-                <button onclick="handleUpload()" class="px-4 py-2 bg-accent text-white hover-bg-accent transition font-bold">Publică Video</button>
+    <!-- MODAL ÎNREGISTRARE -->
+    <div id="registerModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4">
+            <h2 class="text-xl font-bold mb-4 text-white">Creează Cont</h2>
+            <input type="text" id="regUser" placeholder="Nume utilizator" class="w-full mb-3 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
+            <input type="password" id="regPass" placeholder="Parolă" class="w-full mb-4 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('registerModal')" class="px-4 py-2 text-sm border border-gray-500 hover:bg-gray-800">Anulează</button>
+                <button onclick="handleRegister()" class="px-4 py-2 text-sm bg-accent text-white hover-bg-accent">Înregistrează</button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LÓGICA -->
-    <script>
-        // Baza de date simulată cu videoclipurile din schița ta
-        let videos = [
-            { id: 1, title: "video 1 abt smt", thumbnailText: "Thumbnail video" },
-            { id: 2, title: "video2 (wow)", thumbnailText: "thumbnail video 2" },
-            { id: 3, title: "dwwdwdwdwd", thumbnailText: "thumbnail video 3" },
-            { id: 4, title: "dwdwdwdwdwdwd", thumbnailText: "Thumbnail" },
-            { id: 5, title: "wdwdwdwdwdd", thumbnailText: "Thumbnail" },
-            { id: 6, title: "dwdwdwdwd", thumbnailText: "Thumbnail" },
-            { id: 7, title: "video de test", thumbnailText: "Thumbnail" },
-            { id: 8, title: "inca un video", thumbnailText: "Thumbnail" }
-        ];
+    <!-- MODAL LOGIN -->
+    <div id="loginModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4">
+            <h2 class="text-xl font-bold mb-4 text-white">Conectare</h2>
+            <input type="text" id="logUser" placeholder="Nume utilizator" class="w-full mb-3 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
+            <input type="password" id="logPass" placeholder="Parolă" class="w-full mb-4 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('loginModal')" class="px-4 py-2 text-sm border border-gray-500 hover:bg-gray-800">Anulează</button>
+                <button onclick="handleLogin()" class="px-4 py-2 text-sm bg-accent text-white hover-bg-accent">Intră</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // ====================================================================
+        // SISTEM AUTENTIFICARE
+        // ====================================================================
+        
+        // Preluăm conturile salvate în memoria locală și le combinăm cu cele din date_conturi.js
+        let localUsers = JSON.parse(localStorage.getItem('savedUsers')) || [];
+        let allUsers = [...usersData, ...localUsers];
+
+        function updateAuthUI() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                document.getElementById('authButtons').classList.add('hidden');
+                document.getElementById('userProfile').classList.remove('hidden');
+                document.getElementById('userProfile').classList.add('flex');
+                document.getElementById('userNameDisplay').innerText = "Salut, " + currentUser + "!";
+            } else {
+                document.getElementById('authButtons').classList.remove('hidden');
+                document.getElementById('userProfile').classList.add('hidden');
+                document.getElementById('userProfile').classList.remove('flex');
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        function handleRegister() {
+            const user = document.getElementById('regUser').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+            if(!user || !pass) return alert("Completează toate câmpurile!");
+            
+            if(allUsers.find(u => u.username === user)) {
+                return alert("Acest nume de utilizator există deja!");
+            }
+
+            // Salvăm noul cont în localStorage (deoarece nu putem scrie în date_conturi.js automat)
+            localUsers.push({ username: user, parola: pass });
+            localStorage.setItem('savedUsers', JSON.stringify(localUsers));
+            allUsers = [...usersData, ...localUsers]; // Actualizăm lista totală
+            
+            alert("Cont creat cu succes! Te poți loga acum.");
+            closeModal('registerModal');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('logUser').value.trim();
+            const pass = document.getElementById('logPass').value.trim();
+            
+            const foundUser = allUsers.find(u => u.username === user && u.parola === pass);
+            if(foundUser) {
+                localStorage.setItem('currentUser', foundUser.username);
+                updateAuthUI();
+                closeModal('loginModal');
+            } else {
+                alert("Nume sau parolă incorecte!");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            updateAuthUI();
+        }
+
+        // ====================================================================
+        // SISTEM VIDEOCLIPURI
+        // ====================================================================
+        
         const videoGrid = document.getElementById('videoGrid');
         const latestVideosList = document.getElementById('latestVideosList');
+        const mostPlayedList = document.getElementById('mostPlayedList');
 
-        // Funcția de afișare a videoclipurilor în grilă
         function renderVideos() {
-            videoGrid.innerHTML = '';
-            latestVideosList.innerHTML = '';
-
-            // Generăm grila principală
-            videos.forEach(video => {
-                const card = document.createElement('div');
-                card.className = "group cursor-pointer";
-                card.innerHTML = `
-                    <div class="w-full aspect-video bg-[#1e1e1e] border-2 border-gray-800 flex items-center justify-center relative overflow-hidden group-hover:border-accent transition duration-300">
-                        <span class="text-gray-500 font-mono text-sm group-hover:scale-110 transition duration-300">${video.thumbnailText}</span>
-                        <!-- Buton Play care apare la hover -->
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                            <svg class="w-12 h-12 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
-                        </div>
+            // videoData este variabila care vine din fișierul date_clipuri.js
+            if (typeof videosData === 'undefined' || videosData.length === 0) {
+                videoGrid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 border-2 border-dashed border-gray-700">
+                        <svg class="w-16 h-16 mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+                        <p class="text-lg">Niciun videoclip momentan.</p>
+                        <p class="text-sm mt-1">Adaugă detalii în date_clipuri.js pentru a afișa videoclipuri!</p>
                     </div>
-                    <h4 class="mt-2 text-sm font-semibold text-gray-300 group-hover:text-white truncate">${video.title}</h4>
+                `;
+                latestVideosList.innerHTML = '<li class="text-sm text-gray-500 italic">Lista este goală.</li>';
+                mostPlayedList.innerHTML = '<li class="text-sm text-gray-500 italic">Lista este goală.</li>';
+                return;
+            }
+
+            const sortedVideos = [...videosData].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            sortedVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = "flex flex-col gap-2";
+                
+                const tagsHtml = video.taguri.map(tag => 
+                    `<span class="bg-gray-800 text-gray-300 text-xs px-2 py-1 border border-gray-600">#${tag}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="w-full aspect-video bg-black border-2 border-gray-800 hover:border-accent transition duration-300">
+                        <video controls class="w-full h-full object-contain" preload="metadata">
+                            <source src="${video.fisier}" type="video/mp4">
+                            Browserul tău nu suportă redarea.
+                        </video>
+                    </div>
+                    <div class="flex flex-col">
+                        <h4 class="text-md font-semibold text-white truncate" title="${video.titlu}">${video.titlu}</h4>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-xs text-gray-500">${video.data}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-2">${tagsHtml}</div>
+                    </div>
                 `;
                 videoGrid.appendChild(card);
             });
 
-            // Actualizăm și meniul din stânga (Ultimele videoclipuri - luăm ultimele 5)
-            const recentVideos = [...videos].reverse().slice(0, 5);
-            recentVideos.forEach(video => {
+            sortedVideos.slice(0, 5).forEach(video => {
+                const li = document.createElement('li');
+                li.className = "text-sm hover:text-accent cursor-pointer truncate flex flex-col";
+                li.innerHTML = `<span>${video.titlu}</span><span class="text-xs text-gray-600">${video.data}</span>`;
+                latestVideosList.appendChild(li);
+            });
+
+            sortedVideos.slice(0, 4).forEach((video, index) => {
                 const li = document.createElement('li');
                 li.className = "text-sm hover:text-accent cursor-pointer truncate";
-                li.innerText = video.title;
-                latestVideosList.appendChild(li);
+                li.innerText = (index + 1) + ". " + video.titlu;
+                mostPlayedList.appendChild(li);
             });
         }
 
-        // Inițializăm afișarea
+        // Pornim aplicația
+        updateAuthUI();
         renderVideos();
-
-        // ---- LÓGICA PENTRU MODALUL DE UPLOAD ----
-        const modal = document.getElementById('uploadModal');
-        const titleInput = document.getElementById('newVideoTitle');
-
-        function openUploadModal() {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeUploadModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            titleInput.value = ''; // Resetăm inputul
-        }
-
-        // Simularea încărcării (Adaugă vizual în pagină)
-        function handleUpload() {
-            const title = titleInput.value.trim();
-            
-            if (title === "") {
-                alert("Te rog introdu un titlu pentru videoclip!");
-                return;
-            }
-
-            // Creăm un nou obiect video
-            const newVideo = {
-                id: videos.length + 1,
-                title: title,
-                thumbnailText: "New Upload"
-            };
-
-            // Îl adăugăm la începutul listei (să apară primul)
-            videos.unshift(newVideo);
-            
-            // Re-randăm interfața
-            renderVideos();
-            
-            // Închidem modalul
-            closeUploadModal();
-
-            // Mesaj pentru tine legat de GitHub
-            console.log("Videoclip adăugat în memoria locală a paginii.");
-            console.log("⚠️ Pentru a salva acest videoclip real în GitHub, ar trebui integrat un API Backend cu un Token de Securitate, deoarece fișierele HTML statice nu pot scrie fișiere pe server/github în mod direct din motive de securitate.");
-        }
     </script>
 </body>
 </html>
