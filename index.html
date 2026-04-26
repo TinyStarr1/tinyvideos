@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platformă Video</title>
+    <!-- Folosim Tailwind CSS pentru o stilizare rapidă și curată direct în HTML -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Personalizăm scrollbar-ul pentru a se potrivi cu tema */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e50914; }
+        
+        /* Tema de culori: Gri închis, Gri deschis, Roșu */
+        body { background-color: #121212; color: #f3f4f6; }
+        .bg-surface { background-color: #242424; }
+        .border-accent { border-color: #e50914; }
+        .text-accent { color: #e50914; }
+        .bg-accent { background-color: #e50914; }
+        .hover-bg-accent:hover { background-color: #b9090b; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+    <!-- HEADER / BARA DE SUS -->
+    <header class="bg-surface border-b-[3px] border-accent p-4 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-[1600px] mx-auto flex justify-between items-center flex-wrap gap-4">
+            <!-- Logo -->
+            <div class="border-2 border-white px-4 py-2 font-black tracking-wider text-xl">
+                <span class="text-white">LO</span><span class="text-accent">GO</span>
+            </div>
+
+            <!-- Meniul din dreapta -->
+            <nav class="flex items-center gap-2 sm:gap-4 flex-wrap text-sm sm:text-base">
+                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Taguri</button>
+                
+                <!-- Butonul de Upload cerut -->
+                <button onclick="openUploadModal()" class="bg-accent text-white border-2 border-accent px-4 py-1 flex items-center gap-2 hover-bg-accent transition shadow-[0_0_10px_rgba(229,9,20,0.3)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                    </svg>
+                    Încarcă
+                </button>
+
+                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Favorite</button>
+                <button class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Înregistrare</button>
+                <button class="border-2 border-white px-4 py-1 text-white hover:border-accent hover:text-accent transition">Login</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONȚINUT PRINCIPAL -->
+    <div class="flex flex-1 max-w-[1600px] mx-auto w-full">
+        
+        <!-- SIDEBAR (Bara din stânga) -->
+        <aside class="w-full md:w-64 p-4 border-r-2 border-gray-800 flex-shrink-0 hidden md:flex flex-col gap-6">
+            <!-- Search -->
+            <div class="border-2 border-white p-1 flex">
+                <input type="text" placeholder="Caută..." class="bg-transparent w-full px-2 outline-none text-white placeholder-gray-500">
+            </div>
+
+            <!-- Ultimele videoclipuri -->
+            <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
+                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Ultimele adăugate</h3>
+                <ul class="space-y-3" id="latestVideosList">
+                    <!-- Generate din JS -->
+                </ul>
+            </div>
+
+            <!-- Cele mai redate -->
+            <div class="border-2 border-gray-600 p-4 h-64 overflow-y-auto">
+                <h3 class="text-sm text-gray-400 uppercase tracking-widest mb-4">Cele mai redate</h3>
+                <ul class="space-y-3">
+                    <li class="text-sm hover:text-accent cursor-pointer truncate">1. Cum să programezi</li>
+                    <li class="text-sm hover:text-accent cursor-pointer truncate">2. Muzică relaxantă</li>
+                    <li class="text-sm hover:text-accent cursor-pointer truncate">3. Meci complet 2024</li>
+                    <li class="text-sm hover:text-accent cursor-pointer truncate">4. Tutorial HTML/CSS</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- GRILA DE VIDEOCLIPURI (Partea dreaptă) -->
+        <main class="flex-1 p-4 md:p-8">
+            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Videoclipurile vor fi generate aici de JavaScript -->
+            </div>
+        </main>
+
+    </div>
+
+    <!-- MODAL PENTRU UPLOAD (Ascuns by default) -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-surface border-2 border-accent p-6 w-full max-w-md mx-4 shadow-[0_0_30px_rgba(229,9,20,0.2)]">
+            <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Încarcă un videoclip nou</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Titlu Videoclip</label>
+                    <input type="text" id="newVideoTitle" class="w-full bg-[#121212] border border-gray-600 text-white p-2 outline-none focus:border-accent transition" placeholder="Ex: VLOG la munte...">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Fișier Video (Atenție: Simulare)</label>
+                    <input type="file" accept="video/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-red-700 cursor-pointer">
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeUploadModal()" class="px-4 py-2 border border-gray-500 hover:bg-gray-800 transition">Anulează</button>
+                <button onclick="handleUpload()" class="px-4 py-2 bg-accent text-white hover-bg-accent transition font-bold">Publică Video</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LÓGICA -->
+    <script>
+        // Baza de date simulată cu videoclipurile din schița ta
+        let videos = [
+            { id: 1, title: "video 1 abt smt", thumbnailText: "Thumbnail video" },
+            { id: 2, title: "video2 (wow)", thumbnailText: "thumbnail video 2" },
+            { id: 3, title: "dwwdwdwdwd", thumbnailText: "thumbnail video 3" },
+            { id: 4, title: "dwdwdwdwdwdwd", thumbnailText: "Thumbnail" },
+            { id: 5, title: "wdwdwdwdwdd", thumbnailText: "Thumbnail" },
+            { id: 6, title: "dwdwdwdwd", thumbnailText: "Thumbnail" },
+            { id: 7, title: "video de test", thumbnailText: "Thumbnail" },
+            { id: 8, title: "inca un video", thumbnailText: "Thumbnail" }
+        ];
+
+        const videoGrid = document.getElementById('videoGrid');
+        const latestVideosList = document.getElementById('latestVideosList');
+
+        // Funcția de afișare a videoclipurilor în grilă
+        function renderVideos() {
+            videoGrid.innerHTML = '';
+            latestVideosList.innerHTML = '';
+
+            // Generăm grila principală
+            videos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = "group cursor-pointer";
+                card.innerHTML = `
+                    <div class="w-full aspect-video bg-[#1e1e1e] border-2 border-gray-800 flex items-center justify-center relative overflow-hidden group-hover:border-accent transition duration-300">
+                        <span class="text-gray-500 font-mono text-sm group-hover:scale-110 transition duration-300">${video.thumbnailText}</span>
+                        <!-- Buton Play care apare la hover -->
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                            <svg class="w-12 h-12 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                        </div>
+                    </div>
+                    <h4 class="mt-2 text-sm font-semibold text-gray-300 group-hover:text-white truncate">${video.title}</h4>
+                `;
+                videoGrid.appendChild(card);
+            });
+
+            // Actualizăm și meniul din stânga (Ultimele videoclipuri - luăm ultimele 5)
+            const recentVideos = [...videos].reverse().slice(0, 5);
+            recentVideos.forEach(video => {
+                const li = document.createElement('li');
+                li.className = "text-sm hover:text-accent cursor-pointer truncate";
+                li.innerText = video.title;
+                latestVideosList.appendChild(li);
+            });
+        }
+
+        // Inițializăm afișarea
+        renderVideos();
+
+        // ---- LÓGICA PENTRU MODALUL DE UPLOAD ----
+        const modal = document.getElementById('uploadModal');
+        const titleInput = document.getElementById('newVideoTitle');
+
+        function openUploadModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeUploadModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            titleInput.value = ''; // Resetăm inputul
+        }
+
+        // Simularea încărcării (Adaugă vizual în pagină)
+        function handleUpload() {
+            const title = titleInput.value.trim();
+            
+            if (title === "") {
+                alert("Te rog introdu un titlu pentru videoclip!");
+                return;
+            }
+
+            // Creăm un nou obiect video
+            const newVideo = {
+                id: videos.length + 1,
+                title: title,
+                thumbnailText: "New Upload"
+            };
+
+            // Îl adăugăm la începutul listei (să apară primul)
+            videos.unshift(newVideo);
+            
+            // Re-randăm interfața
+            renderVideos();
+            
+            // Închidem modalul
+            closeUploadModal();
+
+            // Mesaj pentru tine legat de GitHub
+            console.log("Videoclip adăugat în memoria locală a paginii.");
+            console.log("⚠️ Pentru a salva acest videoclip real în GitHub, ar trebui integrat un API Backend cu un Token de Securitate, deoarece fișierele HTML statice nu pot scrie fișiere pe server/github în mod direct din motive de securitate.");
+        }
+    </script>
+</body>
+</html>
