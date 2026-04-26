@@ -130,7 +130,7 @@
         window.handleLogin = () => {
             const user = document.getElementById('logUser').value.trim();
             const pass = document.getElementById('logPass').value.trim();
-            const allUsers = window.usersData || [];
+            const allUsers = typeof usersData !== 'undefined' ? usersData : (window.usersData || []);
             const foundUser = allUsers.find(u => u.username === user && u.parola === pass);
             
             if(foundUser) {
@@ -213,7 +213,7 @@
             if(!container) return;
 
             // Extragem toate tagurile unice din clipuri
-            let data = window.videosData || [];
+            let data = typeof videosData !== 'undefined' ? videosData : (window.videosData || []);
             const allTags = new Set();
             data.forEach(v => {
                 if(v.taguri) Object.values(v.taguri).forEach(t => allTags.add(t.toLowerCase().trim()));
@@ -236,7 +236,7 @@
             const mpList = document.getElementById('mostPlayedList');
             grid.innerHTML = ''; latList.innerHTML = ''; mpList.innerHTML = '';
 
-            let data = window.videosData || [];
+            let data = typeof videosData !== 'undefined' ? videosData : (window.videosData || []);
             if(data.length === 0) {
                 grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500">Nu există clipuri momentan.</div>`;
                 return;
