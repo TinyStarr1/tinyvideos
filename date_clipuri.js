@@ -26,6 +26,8 @@ const videosData = [
         taguri: ["paizuri", "cum", "2d"],
         autor: "admin"
     },
+    
+    /*
     {
         // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
         link: "",
@@ -34,16 +36,6 @@ const videosData = [
         taguri: ["paizuri", "cum", "2d"],
         autor: "admin"
     },
-
-    // Pentru a adăuga un clip nou, șterge barele (/* ... */) de mai jos și completează datele:
-    /*
-    {
-        link: "https://link-catre-noul-tau-video.com/clip.mp4",
-        titlu: "Titlul noului clip",
-        data: "2026-04-27",
-        taguri: ["gaming", "amuzant"],
-        autor: "NumeleTau"
-    }
     */
 
     
