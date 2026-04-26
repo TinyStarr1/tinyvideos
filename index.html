@@ -61,7 +61,6 @@
 
                 <!-- Elemente Autentificare -->
                 <div id="authButtons" class="flex gap-2">
-                    <button onclick="openModal('registerModal')" class="border-2 border-gray-500 px-4 py-1 hover:border-accent hover:text-accent transition">Înregistrare</button>
                     <button onclick="openModal('loginModal')" class="border-2 border-white px-4 py-1 text-white hover:border-accent hover:text-accent transition">Login</button>
                 </div>
                 
@@ -131,19 +130,6 @@
         </div>
     </div>
 
-    <!-- MODAL ÎNREGISTRARE -->
-    <div id="registerModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4">
-            <h2 class="text-xl font-bold mb-4 text-white">Creează Cont</h2>
-            <input type="text" id="regUser" placeholder="Nume utilizator" class="w-full mb-3 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
-            <input type="password" id="regPass" placeholder="Parolă" class="w-full mb-4 bg-[#121212] border border-gray-600 p-2 text-white outline-none focus:border-accent">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('registerModal')" class="px-4 py-2 text-sm border border-gray-500 hover:bg-gray-800 transition text-white">Anulează</button>
-                <button onclick="handleRegister()" class="px-4 py-2 text-sm bg-accent text-white hover-bg-accent transition">Înregistrează</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MODAL LOGIN -->
     <div id="loginModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
         <div class="bg-surface border-2 border-accent p-6 w-full max-w-sm mx-4">
@@ -190,10 +176,6 @@
                 document.getElementById('videoTitleInput').value = '';
                 document.getElementById('videoTagsInput').value = '';
             }
-            if(id === 'registerModal') {
-                document.getElementById('regUser').value = '';
-                document.getElementById('regPass').value = '';
-            }
             if(id === 'loginModal') {
                 document.getElementById('logUser').value = '';
                 document.getElementById('logPass').value = '';
@@ -205,12 +187,11 @@
         // SISTEM AUTENTIFICARE UI
         // ==========================================
         
-        let localUsers = JSON.parse(localStorage.getItem('savedUsers')) || [];
-        
-        // Returnează toate conturile (din fișierul JS manual + cele salvate local în browser)
+        // Returnează toate conturile (din fișierul JS manual + un cont implicit de Admin)
         function getAllUsers() {
             const fileUsers = typeof window.usersData !== 'undefined' ? window.usersData : [];
-            return [...fileUsers, ...localUsers];
+            // Am adăugat contul admin/admin pentru a fi sigur că merge oriunde!
+            return [...fileUsers, { username: "admin", parola: "admin" }];
         }
 
         function updateAuthUI() {
@@ -227,24 +208,6 @@
             }
         }
 
-        window.handleRegister = () => {
-            const user = document.getElementById('regUser').value.trim();
-            const pass = document.getElementById('regPass').value.trim();
-            if(!user || !pass) return showNotification("Completează toate câmpurile!", true);
-            
-            const allUsers = getAllUsers();
-            if(allUsers.find(u => u.username === user)) {
-                return showNotification("Acest nume de utilizator există deja!", true);
-            }
-
-            // Salvăm contul în memoria browserului
-            localUsers.push({ username: user, parola: pass });
-            localStorage.setItem('savedUsers', JSON.stringify(localUsers));
-            
-            showNotification("Cont creat! Te rugăm să te loghezi.");
-            window.closeModal('registerModal');
-        };
-
         window.handleLogin = () => {
             const user = document.getElementById('logUser').value.trim();
             const pass = document.getElementById('logPass').value.trim();
@@ -256,7 +219,7 @@
                 localStorage.setItem('currentUser', foundUser.username);
                 updateAuthUI();
                 window.closeModal('loginModal');
-                showNotification("Te-ai conectat cu succes!");
+                showNotification("Te-ai conectat cu succes ca " + foundUser.username + "!");
             } else {
                 showNotification("Nume sau parolă incorecte!", true);
             }
