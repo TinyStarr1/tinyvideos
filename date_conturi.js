@@ -7,7 +7,7 @@ const usersData = [
     // Exemplu de cont adăugat manual:
     /*
     {
-        username: "admin",
+        username: "tiny",
         parola: "01988910"
     }
     */
