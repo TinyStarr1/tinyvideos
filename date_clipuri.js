@@ -63,7 +63,7 @@ const videosData = [
         link: "https://aws-mp4.rule34.xxx//images/3446/13558c2783d8fc1c036432469163e0c4.mp4?17086169",
         titlu: "Mitsuru Kirijo Blowjob",
         data: "2026-04-26",
-        taguri: ["blowjob", "cum", "2d"],
+        taguri: ["blowjob", "cum", "3d"],
         autor: "admin"
     },
     {
@@ -71,7 +71,7 @@ const videosData = [
         link: "https://aws-mp4.rule34.xxx//images/1974/fcec6cc1279f2bb95473ff5ce732a781.mp4?14191939",
         titlu: "ceres fauna blowjob",
         data: "2026-04-26",
-        taguri: ["blowjob", "cum", "2d"],
+        taguri: ["blowjob", "cum", "3d"],
         autor: "admin"
     },
     {
@@ -79,7 +79,7 @@ const videosData = [
         link: "https://aws-mp4.rule34.xxx//images/4738/60aabd2951bd0dc08f623ce917b2b1df.mp4?14873193",
         titlu: "nekomiya mana blowjob",
         data: "2026-04-26",
-        taguri: ["blowjob", "cum", "2d"],
+        taguri: ["blowjob", "cum", "3d", "sex"],
         autor: "admin"
     },
     {
