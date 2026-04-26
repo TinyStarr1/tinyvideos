@@ -18,6 +18,23 @@ const videosData = [
         taguri: ["paizuri", "cum", "2d"],
         autor: "admin"
     },
+    {
+        // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
+        link: "https://eu-cdn09-prem.boomio-cdn.com/remote_control.php?file=29nwynUKY3fxpUF9Gn_8ubJweVeRfvZ7t0hXpN0R3wX-JuzVTpPzAWN0OqUn4Q6pcmQBHRlg53PQ0l5Oh90cJ10eCRcnL56dgsTce2LE0WIX9rNqzpnKBNP-uM8nzqTnkNrjDk2ghlwN0xwZeN0MRTpC-tdNbZCee6kKsYuypfC5saVBvJdSn6i1PHUs3Qs1ugi57OOkNWkguUG2R3di6OHmSod5SnU.mp4&acctoken=ZTNhY2JhMTc3OWI0MGI3ZTRhZDVlMTBkNjRmM2ExMTA2ZmJmNTU2OGUzMDVlMDc5ZTQzYjViNDUwMGQ4MTIxZnwxNzc3MjM0OTU1fDg5MjUwMHxydWxlMzR2aWRlby5jb218MHx8YjBjZjQ4OTRiODljNTk5NGQ2M2E1MzU0MzMyMjk5Yjc",
+        titlu: "Okunoda Miyoi Paizuri [Kuwagatanoomutu]",
+        data: "2026-04-26",
+        taguri: ["paizuri", "cum", "2d"],
+        autor: "admin"
+    },
+    {
+        // Acesta este un video de test (Big Buck Bunny) luat de pe internet ca să vezi cum arată
+        link: "",
+        titlu: "",
+        data: "2026-04-26",
+        taguri: ["paizuri", "cum", "2d"],
+        autor: "admin"
+    },
+
     // Pentru a adăuga un clip nou, șterge barele (/* ... */) de mai jos și completează datele:
     /*
     {
